@@ -1,0 +1,29 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "rootDir": ".",
+    "sourceMap": true,
+    "declaration": false,
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "target": "es2015",
+    "module": "esnext",
+    "lib": ["es2020", "dom"],
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@ecommerce-mono-repo/auth-lib": ["libs/auth-lib/src/index.ts"],
+      "@ecommerce-mono-repo/cart-lib": ["libs/cart-lib/src/index.ts"],
+      "@ecommerce-mono-repo/order-lib": ["libs/order-lib/src/index.ts"],
+      "@ecommerce-mono-repo/product-lib": ["libs/product-lib/src/index.ts"],
+      "@ecommerce-mono-repo/shared-ui": ["libs/shared-ui/src/index.ts"],
+      "@ecommerce-mono-repo/state-management": [
+        "libs/state-management/src/index.ts"
+      ]
+    }
+  },
+  "exclude": ["node_modules", "tmp"]
+}

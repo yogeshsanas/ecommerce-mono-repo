@@ -1,0 +1,19 @@
+{
+  "name": "order-lib",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/order-lib/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/vite:build",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/order-lib",
+        "main": "libs/order-lib/src/index.ts",
+        "tsConfig": "libs/order-lib/tsconfig.lib.json",
+        "assets": ["libs/order-lib/*.md"]
+      }
+    }
+  }
+}

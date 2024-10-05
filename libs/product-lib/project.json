@@ -1,0 +1,19 @@
+{
+  "name": "product-lib",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/product-lib/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/vite:build",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/product-lib",
+        "main": "libs/product-lib/src/index.ts",
+        "tsConfig": "libs/product-lib/tsconfig.lib.json",
+        "assets": ["libs/product-lib/*.md"]
+      }
+    }
+  }
+}
