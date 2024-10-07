@@ -1,6 +1,7 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
+    "jsx": "react", // or "react-jsx" for React 17+
     "rootDir": ".",
     "sourceMap": true,
     "declaration": false,
@@ -15,6 +16,9 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
+      "@ecommerce-mono-repo/api-client-lib": [
+        "libs/api-client-lib/src/index.ts"
+      ],
       "@ecommerce-mono-repo/auth-lib": ["libs/auth-lib/src/index.ts"],
       "@ecommerce-mono-repo/cart-lib": ["libs/cart-lib/src/index.ts"],
       "@ecommerce-mono-repo/order-lib": ["libs/order-lib/src/index.ts"],
@@ -23,7 +27,9 @@
       "@ecommerce-mono-repo/state-management": [
         "libs/state-management/src/index.ts"
       ]
-    }
+    },
+    "esModuleInterop": true, // Enable esModuleInterop
+    "allowSyntheticDefaultImports": true // Optional: allows default imports from non-ES modules
   },
   "exclude": ["node_modules", "tmp"]
 }

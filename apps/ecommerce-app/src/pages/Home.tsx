@@ -1,4 +1,7 @@
-import React from 'react';
+import React , {useEffect} from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState, AppDispatch } from '../../../../libs/state-management/src/lib/store';
+import { fetchProducts, Product } from '../../../../libs/product-lib/src/lib/productSlice';
 import { ChevronRight, Star, ShoppingCart } from 'lucide-react';
 
 const categories = [
@@ -8,14 +11,26 @@ const categories = [
   { name: 'Sports', image: '/api/placeholder/100/100' },
 ];
 
-const featuredProducts = [
-  { name: 'Wireless Earbuds', price: 79.99, rating: 4.5, image: '/api/placeholder/200/200' },
-  { name: 'Smart Watch', price: 199.99, rating: 4.2, image: '/api/placeholder/200/200' },
-  { name: 'Laptop', price: 999.99, rating: 4.8, image: '/api/placeholder/200/200' },
-  { name: 'Running Shoes', price: 89.99, rating: 4.3, image: '/api/placeholder/200/200' },
-];
-
 const HomePage = () => {
+
+  const dispatch= useDispatch<AppDispatch>();
+  const products = useSelector((state: RootState) => state.product.items as Product[]);
+  const productStatus = useSelector((state: RootState) => state.product.status);
+  const productError = useSelector((state: RootState) => state.product.error);
+  
+
+  if (!Array.isArray(products)) {
+    console.error("Products is not an array:", products);
+    return <div>No products available.</div>; // Fallback UI
+  }
+  
+
+  useEffect(() => {
+    if (productStatus === 'idle') {
+      dispatch(fetchProducts());
+    }
+  }, [productStatus, dispatch]);
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Hero Section */}
@@ -52,9 +67,11 @@ const HomePage = () => {
       <section>
         <h2 className="text-2xl font-semibold mb-6">Featured Products</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {featuredProducts.map((product) => (
-            <div key={product.name} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-300">
-              <img src={product.image} alt={product.name} className="w-full h-48 object-cover" />
+          {productStatus === 'loading' && <div>Loading...</div>}
+          {productError && <div>Error: {productError}</div>}
+          {products.map((product) => (
+            <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-300">
+              <img src={product.images[0].url} alt={product.name} className="w-full h-48 object-cover" />
               <div className="p-4">
                 <h3 className="font-semibold mb-2">{product.name}</h3>
                 <div className="flex justify-between items-center mb-4">
