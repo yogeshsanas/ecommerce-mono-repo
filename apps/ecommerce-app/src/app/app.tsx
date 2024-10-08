@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Home from '../pages/Home';
 import Cart from '../pages/Cart';
-import ProductDetails from '../pages/ProductDetails';
+import ProductDetailPage from '../../../../libs/product-lib/src/lib/ProductDetailPage';
 import Navbar from '../../../../libs/shared-ui/src/lib/Navbar'
 
 export function App() {
@@ -13,7 +13,7 @@ export function App() {
         <Route path='/' element={<Home />} />
         <Route path='/cart' element={<Cart />} />
         {/* Update this line to use a dynamic id parameter */}
-        <Route path='/product/:id' element={<ProductDetails />} />
+        <Route path='/product/:id' element={<ProductDetailPage />} />
       </Routes>
     </div>
 

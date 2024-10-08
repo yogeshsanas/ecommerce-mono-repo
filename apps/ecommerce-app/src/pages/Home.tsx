@@ -1,8 +1,10 @@
-import React , {useEffect} from 'react';
+import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../../../libs/state-management/src/lib/store';
 import { fetchProducts, Product } from '../../../../libs/product-lib/src/lib/productSlice';
 import { ChevronRight, Star, ShoppingCart } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { addItem } from '../../../../libs/cart-lib/src/lib/cartSlice';
 
 const categories = [
   { name: 'Electronics', image: '/api/placeholder/100/100' },
@@ -12,24 +14,35 @@ const categories = [
 ];
 
 const HomePage = () => {
-
-  const dispatch= useDispatch<AppDispatch>();
+  const dispatch = useDispatch<AppDispatch>();
   const products = useSelector((state: RootState) => state.product.items as Product[]);
   const productStatus = useSelector((state: RootState) => state.product.status);
   const productError = useSelector((state: RootState) => state.product.error);
-  
-
-  if (!Array.isArray(products)) {
-    console.error("Products is not an array:", products);
-    return <div>No products available.</div>; // Fallback UI
-  }
-  
 
   useEffect(() => {
     if (productStatus === 'idle') {
       dispatch(fetchProducts());
     }
   }, [productStatus, dispatch]);
+
+  const handleAddToCart = (product: Product) => {
+    const itemToAdd = {
+      id: product.id.toString(), // Ensure id is a string
+      name: product.name,
+      image: product.images[0]?.url || '/api/placeholder/400/400', // Default image if none available
+      selectedQuantity: '1', // Default quantity; this could be made dynamic
+      quantity: 1, // Adding quantity property
+      price: product.price, // Directly use the price
+    };
+  
+    dispatch(addItem(itemToAdd)); // Dispatch action to add item to cart
+    alert(`${product.name} has been added to your cart!`); // Optionally, show a confirmation message
+  };  
+
+  if (!Array.isArray(products)) {
+    console.error("Products is not an array:", products);
+    return <div>No products available.</div>; // Fallback UI
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -70,23 +83,23 @@ const HomePage = () => {
           {productStatus === 'loading' && <div>Loading...</div>}
           {productError && <div>Error: {productError}</div>}
           {products.map((product) => (
-            <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-300">
+            <Link key={product.id} to={`/product/${product.id}`} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-300">
               <img src={product.images[0].url} alt={product.name} className="w-full h-48 object-cover" />
               <div className="p-4">
                 <h3 className="font-semibold mb-2">{product.name}</h3>
                 <div className="flex justify-between items-center mb-4">
-                  <span className="text-lg font-bold">${product.price}</span>
+                  <span className="text-lg font-bold">₹{product.price}</span> {/* Adjusted for currency */}
                   <div className="flex items-center">
                     <Star className="w-5 h-5 text-yellow-400 fill-current" />
                     <span className="ml-1 text-sm text-gray-600">{product.rating}</span>
                   </div>
                 </div>
-                <button className="w-full bg-blue-600 text-white py-2 rounded-md flex items-center justify-center hover:bg-blue-700 transition duration-300">
+                <button onClick={() => handleAddToCart(product)} className="w-full bg-blue-600 text-white py-2 rounded-md flex items-center justify-center hover:bg-blue-700 transition duration-300">
                   <ShoppingCart className="w-5 h-5 mr-2" />
                   Add to Cart
                 </button>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </section>

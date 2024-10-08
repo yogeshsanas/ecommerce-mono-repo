@@ -8,14 +8,15 @@ export interface QuantityOption {
 export interface CartItem {
   id: string;
   name: string;
-  image: string; // For item images
-  selectedQuantity: string; // Refers to the currently selected quantity (e.g., '0.5', '1')
-  quantities: Record<string, QuantityOption>; // Maps quantity (e.g., '0.5', '1') to price
+  image: string;
+  quantity: number; // This keeps track of the quantity in the cart
+  price: number; // Price of a single item
+  selectedQuantity: string; // If you're using this for the selected quantity
 }
 
 export interface CartState {
   items: CartItem[];
-  total: number; 
+  total: number;
 }
 
 // Initial state
@@ -32,61 +33,59 @@ export const cartSlice = createSlice({
     addItem: (state, action: PayloadAction<CartItem>) => {
       const newItem = action.payload;
       const existingItem = state.items.find(item => item.id === newItem.id);
-
+    
       if (existingItem) {
-        // If item exists, just update the selected quantity
-        const previousPrice = existingItem.quantities[existingItem.selectedQuantity].price;
-        existingItem.selectedQuantity = newItem.selectedQuantity;
-        const newPrice = existingItem.quantities[newItem.selectedQuantity].price;
-
-        // Adjust total price
-        state.total += newPrice - previousPrice;
+        // If item exists, just update the quantity
+        existingItem.quantity += newItem.quantity; // Update quantity
+        state.total += newItem.price * newItem.quantity; // Adjust total price based on the new quantity
       } else {
         // If item doesn't exist, add it and update total price
         state.items.push(newItem);
-        state.total += newItem.quantities[newItem.selectedQuantity].price;
+        state.total += newItem.price * newItem.quantity; // Add price based on quantity
       }
-    },
+    },    
 
-    // Remove an item from the cart
     removeItem: (state, action: PayloadAction<string>) => {
       const index = state.items.findIndex(item => item.id === action.payload);
-
+    
       if (index !== -1) {
         const itemToRemove = state.items[index];
-        const itemPrice = itemToRemove.quantities[itemToRemove.selectedQuantity].price;
-
-        // Subtract from total and remove the item
-        state.total -= itemPrice;
-        state.items.splice(index, 1);
+        
+        // Adjust total price based on the quantity
+        const itemPrice = itemToRemove.price * itemToRemove.quantity; 
+        state.total -= itemPrice; // Subtract from total
+        state.items.splice(index, 1); // Remove the item
       }
-    },
+    },    
 
-    // Update quantity of an existing item
     updateQuantity: (state, action: PayloadAction<{ id: string; quantity: string }>) => {
       const { id, quantity } = action.payload;
-      const item = state.items.find(item => item.id === id);
-
-      if (item && item.quantities[quantity]) {
-        const previousPrice = item.quantities[item.selectedQuantity].price;
-        item.selectedQuantity = quantity;
-        const newPrice = item.quantities[quantity].price;
-
-        // Adjust the total based on the new price
-        state.total += newPrice - previousPrice;
+      const item = state.items.find((item) => item.id === id);
+    
+      if (item) {
+        const previousQuantity = item.quantity;
+        
+        if (quantity === '1') {
+          item.quantity += 1; // Increment the quantity
+        } else if (quantity === '0' && item.quantity > 1) {
+          item.quantity -= 1; // Decrement the quantity only if greater than 1
+        }
+    
+        // Update total price based on quantity change
+        const priceDifference = item.price * (item.quantity - previousQuantity);
+        state.total += priceDifference; 
       }
-    },
+    },    
+
   },
 });
 
 // Selectors
 export const selectCartItems = (state: { cart: CartState }) => state.cart.items;
-
 export const selectCartTotal = (state: { cart: CartState }) =>
   state.cart.items.reduce((total, item) => {
-    return total + item.quantities[item.selectedQuantity].price;
+    return total + (item.price * item.quantity); // Calculate total based on price and quantity
   }, 0);
-
 // Export actions and reducer
 export const { addItem, removeItem, updateQuantity } = cartSlice.actions;
 export default cartSlice.reducer;

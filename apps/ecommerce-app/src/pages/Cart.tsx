@@ -8,11 +8,21 @@ const Cart: React.FC = () => {
   const cartItems = useSelector(selectCartItems);
   const totalPrice = useSelector(selectCartTotal);
 
-  const handleUpdateQuantity = (id: string, newQuantity: string) => {
-    dispatch(updateQuantity({ id, quantity: newQuantity }));
+  // Increment quantity handler
+  const handleIncrement = (id: string) => {
+    dispatch(updateQuantity({ id, quantity: '1' })); // Increase quantity by 1
   };
 
-  // Add type definition for id (string)
+  const handleDecrement = (id: string) => {
+    const currentItem = cartItems.find((item) => item.id === id);
+    if (currentItem && currentItem.quantity > 1) {
+      dispatch(updateQuantity({ id, quantity: (currentItem.quantity - 1).toString() })); // Decrease quantity and convert to string
+    } else {
+      dispatch(removeItem(id)); // Remove item if quantity is 1 or less
+    }
+  };
+  
+  // Remove item handler
   const handleRemoveItem = (id: string) => {
     dispatch(removeItem(id));
   };
@@ -31,26 +41,16 @@ const Cart: React.FC = () => {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-gray-900 truncate">{item.name}</p>
                   <p className="text-sm text-gray-500">
-                    ₹{item.quantities[item.selectedQuantity]?.price || 'N/A'} for {item.selectedQuantity} kg
+                    ₹{item.price} for {item.quantity} item(s) {/* Updated to use item.price directly */}
                   </p>
                 </div>
                 <div className="flex items-center">
-                  <select
-                    value={item.selectedQuantity}
-                    onChange={(e) => handleUpdateQuantity(item.id, e.target.value)}
-                    className="ml-2 border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                  >
-                    {Object.keys(item.quantities).map((quantity) => (
-                      <option key={quantity} value={quantity}>
-                        {quantity} kg
-                      </option>
-                    ))}
-                  </select>
+                  <button onClick={() => handleDecrement(item.id)} className="px-2 py-1 bg-gray-200 rounded-md">-</button>
+                  <span className="mx-2">{item.quantity}</span>
+                  <button onClick={() => handleIncrement(item.id)} className="px-2 py-1 bg-gray-200 rounded-md">+</button>
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-900">
-                    ₹{item.quantities[item.selectedQuantity]?.price || 'N/A'}
-                  </p>
+                  <p className="text-sm font-medium text-gray-900">₹{item.price}</p> {/* Use item.price directly */}
                 </div>
                 <button 
                   onClick={() => handleRemoveItem(item.id)}

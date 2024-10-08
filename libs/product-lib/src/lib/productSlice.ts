@@ -40,7 +40,7 @@ export interface Product {
   reviews: number;
   images: Image[];
   availability: string;
-  shipping: Shipping;
+  shipping: Shipping | null;
 }
 
 // ProductState Interface
