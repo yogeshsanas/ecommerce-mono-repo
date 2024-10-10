@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Home from '../pages/Home';
-import Cart from '../pages/Cart';
+import Cart from '../../../../libs/cart-lib/src/lib/Cart';
 import ProductDetailPage from '../../../../libs/product-lib/src/lib/ProductDetailPage';
 import Navbar from '../../../../libs/shared-ui/src/lib/Navbar'
 

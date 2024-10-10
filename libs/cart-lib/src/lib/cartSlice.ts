@@ -33,7 +33,7 @@ export const cartSlice = createSlice({
     addItem: (state, action: PayloadAction<CartItem>) => {
       const newItem = action.payload;
       const existingItem = state.items.find(item => item.id === newItem.id);
-    
+
       if (existingItem) {
         // If item exists, just update the quantity
         existingItem.quantity += newItem.quantity; // Update quantity
@@ -43,39 +43,45 @@ export const cartSlice = createSlice({
         state.items.push(newItem);
         state.total += newItem.price * newItem.quantity; // Add price based on quantity
       }
-    },    
+    },
 
     removeItem: (state, action: PayloadAction<string>) => {
       const index = state.items.findIndex(item => item.id === action.payload);
-    
+
       if (index !== -1) {
         const itemToRemove = state.items[index];
-        
+
         // Adjust total price based on the quantity
-        const itemPrice = itemToRemove.price * itemToRemove.quantity; 
+        const itemPrice = itemToRemove.price * itemToRemove.quantity;
         state.total -= itemPrice; // Subtract from total
         state.items.splice(index, 1); // Remove the item
       }
-    },    
+    },
 
     updateQuantity: (state, action: PayloadAction<{ id: string; quantity: string }>) => {
       const { id, quantity } = action.payload;
       const item = state.items.find((item) => item.id === id);
-    
+
       if (item) {
+        const newQuantity = parseInt(quantity, 10); // Convert the string to a number
         const previousQuantity = item.quantity;
-        
-        if (quantity === '1') {
-          item.quantity += 1; // Increment the quantity
-        } else if (quantity === '0' && item.quantity > 1) {
-          item.quantity -= 1; // Decrement the quantity only if greater than 1
+
+        // Ensure new quantity is valid and update the item quantity
+        if (newQuantity >= 0) {
+          item.quantity = newQuantity; // Update to new quantity
+
+          // Update total price based on the quantity change
+          const priceDifference = item.price * (newQuantity - previousQuantity);
+          state.total += priceDifference;
         }
-    
-        // Update total price based on quantity change
-        const priceDifference = item.price * (item.quantity - previousQuantity);
-        state.total += priceDifference; 
+
+        // Optional: If new quantity is 0, remove the item from the cart
+        if (newQuantity === 0) {
+          state.items = state.items.filter((item) => item.id !== id); // Remove the item from cart
+        }
       }
-    },    
+    },
+
 
   },
 });
