@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { Trash2 } from 'lucide-react';
 import {
   updateQuantity,
@@ -8,6 +9,12 @@ import {
   selectCartTotal,
   CartItem
 } from './cartSlice';
+import {
+  setUser,
+  selectIsAuthenticated,
+  selectCurrentUser,
+  User
+} from '../../../auth-lib/src/lib/authSlice';
 import Button from '../../../shared-ui/src/lib/Button';
 import Input from '../../../shared-ui/src/lib/Input';
 import apiClient from '../../../api-client-lib/src/lib/api-client-lib';
@@ -28,14 +35,14 @@ const Cart: React.FC = () => {
   const dispatch = useDispatch();
   const cartItems = useSelector(selectCartItems);
   const totalPrice = useSelector(selectCartTotal);
-
+  const navigate = useNavigate();
   const [showSignIn, setShowSignIn] = useState(false);
   const [showOTP, setShowOTP] = useState(false);
   const [showCreateAccount, setShowCreateAccount] = useState(false);
-  const [isSignedIn, setIsSignedIn] = useState(false);
   const [otp, setOtp] = useState('');
-  const [selectedEmail, setSelectedEmail] = useState('');
-  const [gmailAccounts, setGmailAccounts] = useState<string[]>(['user1@gmail.com', 'user2@gmail.com']); // Mock email accounts
+  const [userInfo, setUserInfo] = useState({ name: '', email: '', password: '' });
+  const [isVerified, setIsVerified] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleQuantityChange = (id: string, newQuantity: number) => {
     if (newQuantity > 0) {
@@ -50,34 +57,75 @@ const Cart: React.FC = () => {
   };
 
   const handleProceedToCheckout = () => {
-    setShowSignIn(true);
-  };
-
-  const handleEmailSelect = (email: string) => {
-    setSelectedEmail(email);
-    setShowOTP(true);
-    setShowSignIn(false);
-    // Here, you can send OTP to the selected email
-    sendOtpToEmail(email);
-  };
-
-  const sendOtpToEmail = (email: string) => {
-    // Mock function to simulate sending an OTP
-    console.log(`Sending OTP to ${email}`);
-    // You can make an API call here
-    // return apiClient.post('/send-otp', { email });
-  };
-
-  const handleOTPVerification = () => {
-    setIsSignedIn(true);
-    setShowOTP(false);
-    // Here, you would typically verify the OTP sent to the user's email
-    console.log(`Verifying OTP for ${selectedEmail}`);
+    if (isVerified) {
+      navigate('/payment');
+    } else {
+      setShowSignIn(true);
+    }
   };
 
   const handleCreateAccount = () => {
     setShowCreateAccount(true);
     setShowSignIn(false);
+  };
+
+  const isValidEmail = (email: string): boolean => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+
+  const sendOtpToEmail = (email: string) => {
+    apiClient.post('/send-otp', { email })
+      .then(response => {
+        console.log(`OTP sent to ${email}`);
+      })
+      .catch(error => {
+        console.error("Error sending OTP:", error);
+      });
+  };
+
+  const handleOTPVerification = () => {
+    if (!/^\d{6}$/.test(otp)) {
+      setError('Please enter a valid 6-digit OTP');
+      return;
+    }
+
+    try {
+      dispatch(setUser({
+        name: userInfo.name,
+        email: userInfo.email
+      }));
+
+      // Set verification status
+      setIsVerified(true);
+
+      // Clear all modals
+      setShowOTP(false);
+      setShowSignIn(false);
+      setShowCreateAccount(false);
+      setError(null);
+
+      // Navigate to payment page
+      navigate('/payment');
+    } catch (error) {
+      setError('Something went wrong. Please try again.');
+    }
+  };
+
+  const handleAccountSubmit = () => {
+    if (!userInfo.name || !userInfo.email) {
+      setError('Please fill in all fields');
+      return;
+    }
+
+    if (!isValidEmail(userInfo.email)) {
+      setError('Please enter a valid email address');
+      return;
+    }
+
+    console.log('Simulating OTP sent to:', userInfo.email);
+    setShowCreateAccount(false);
+    setShowOTP(true);
+    setError(null);
   };
 
   return (
@@ -98,15 +146,15 @@ const Cart: React.FC = () => {
                   </p>
                 </div>
                 <div className="flex items-center">
-                  <button 
-                    onClick={() => handleQuantityChange(item.id, item.quantity - 1)} 
+                  <button
+                    onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
                     className="px-2 py-1 bg-gray-200 rounded-md"
                   >
                     -
                   </button>
                   <span className="mx-2">{item.quantity}</span>
-                  <button 
-                    onClick={() => handleQuantityChange(item.id, item.quantity + 1)} 
+                  <button
+                    onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
                     className="px-2 py-1 bg-gray-200 rounded-md"
                   >
                     +
@@ -133,11 +181,11 @@ const Cart: React.FC = () => {
           <p className="text-lg font-medium text-gray-900">Total</p>
           <p className="text-lg font-bold text-gray-900">₹{totalPrice.toFixed(2)}</p>
         </div>
-        <Button 
-          onClick={handleProceedToCheckout} 
+        <Button
+          onClick={handleProceedToCheckout}
           className="mt-4 w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-300"
         >
-          Proceed to Checkout
+          {isVerified ? 'Proceed to Payment' : 'Proceed to Checkout'}
         </Button>
       </div>
 
@@ -145,24 +193,46 @@ const Cart: React.FC = () => {
       <Modal isOpen={showSignIn} onClose={() => setShowSignIn(false)}>
         <h2 className="text-xl font-bold mb-4">Sign In</h2>
         <p className="mb-4">Please sign in to continue with your purchase.</p>
-        <ul className="space-y-2">
-          {gmailAccounts.map((email) => (
-            <li key={email}>
-              <Button onClick={() => handleEmailSelect(email)} className="bg-red-500 text-white w-full px-4 py-2 rounded">
-                Sign in with {email}
-              </Button>
-            </li>
-          ))}
-        </ul>
         <Button onClick={handleCreateAccount} className="bg-gray-300 text-black w-full px-4 py-2 rounded mt-4">
           Create Account
+        </Button>
+      </Modal>
+
+      {/* Create Account Modal */}
+      <Modal isOpen={showCreateAccount} onClose={() => setShowCreateAccount(false)}>
+        <h2 className="text-xl font-bold mb-4">Create Account</h2>
+        {error && <p className="text-red-500 mb-4">{error}</p>}
+        <Input
+          type="text"
+          value={userInfo.name}
+          onChange={(e) => setUserInfo({ ...userInfo, name: e.target.value })}
+          className="border border-gray-300 px-2 py-1 rounded mb-4"
+          placeholder="Name"
+        />
+        <Input
+          type="email"
+          value={userInfo.email}
+          onChange={(e) => setUserInfo({ ...userInfo, email: e.target.value })}
+          className="border border-gray-300 px-2 py-1 rounded mb-4"
+          placeholder="Email"
+        />
+        <Input
+          type="password"
+          value={userInfo.password}
+          onChange={(e) => setUserInfo({ ...userInfo, password: e.target.value })}
+          className="border border-gray-300 px-2 py-1 rounded mb-4"
+          placeholder="Password"
+        />
+        <Button onClick={handleAccountSubmit} className="bg-blue-500 text-white px-4 py-2 rounded w-full">
+          Submit
         </Button>
       </Modal>
 
       {/* OTP Modal */}
       <Modal isOpen={showOTP} onClose={() => setShowOTP(false)}>
         <h2 className="text-xl font-bold mb-4">Enter OTP</h2>
-        <p className="mb-4">We've sent an OTP to {selectedEmail}. Please enter it below.</p>
+        {error && <p className="text-red-500 mb-4">{error}</p>}
+        <p className="mb-4">We've sent an OTP to {userInfo.email}. Please enter it below.</p>
         <Input
           type="text"
           value={otp}
@@ -174,23 +244,6 @@ const Cart: React.FC = () => {
           Verify OTP
         </Button>
       </Modal>
-
-      {/* Create Account Modal */}
-      <Modal isOpen={showCreateAccount} onClose={() => setShowCreateAccount(false)}>
-        <h2 className="text-xl font-bold mb-4">Create Account</h2>
-        <p className="mb-4">Please fill in your details to create a new account.</p>
-        {/* Add form fields for creating an account */}
-        <Button onClick={() => setShowCreateAccount(false)} className="bg-blue-500 text-white px-4 py-2 rounded w-full">
-          Submit
-        </Button>
-      </Modal>
-
-      {isSignedIn && (
-        <div className="mt-4 px-4 py-5 sm:px-6 bg-green-100 rounded-b-lg">
-          <h2 className="text-xl font-semibold text-green-800">Welcome, User!</h2>
-          <p className="text-green-700">You are now signed in and can proceed with your purchase.</p>
-        </div>
-      )}
     </div>
   );
 };

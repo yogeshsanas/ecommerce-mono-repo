@@ -1,9 +1,15 @@
 import React, { useState } from 'react';
+import { useSelector } from 'react-redux';
 import { ShoppingCart, Search, Menu, X, MapPin, ChevronDown, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Navbar = () => {
+  const { isLoggedIn, userProfile } = useSelector((state: any) => state.user);
+  const cartItems = useSelector((state: any) => state.cart.cartItems) || []; // Ensure this is always defined
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  console.log('User Profile:', userProfile);
+  console.log('Cart Items:', cartItems);
 
   return (
     <nav className="bg-gray-900 text-white">
@@ -51,27 +57,24 @@ const Navbar = () => {
             </div>
 
             {/* Account & Lists */}
-            <div className="hidden lg:flex flex-col cursor-pointer group">
-              <span className="text-xs group-hover:text-yellow-400 transition-colors duration-200">Hello, sign in</span>
+            <Link to={isLoggedIn ? '/userProfile' : '/signin'} className="hidden lg:flex flex-col cursor-pointer group">
+              <span className="text-xs group-hover:text-yellow-400 transition-colors duration-200">Hello, {isLoggedIn ? userProfile?.name : 'Sign In'}</span>
               <span className="text-sm font-bold group-hover:text-yellow-400 transition-colors duration-200">
                 Account & Lists <ChevronDown className="inline h-4 w-4" />
               </span>
-            </div>
+            </Link>
 
             {/* Returns & Orders */}
-            <div className="hidden lg:flex flex-col cursor-pointer group">
+            <Link to="/orders" className="hidden lg:flex flex-col cursor-pointer group">
               <span className="text-xs group-hover:text-yellow-400 transition-colors duration-200">Returns</span>
               <span className="text-sm font-bold group-hover:text-yellow-400 transition-colors duration-200">& Orders</span>
-            </div>
+            </Link>
 
             {/* Cart */}
             <Link className="flex items-center cursor-pointer group" to='/cart'>
-            <ShoppingCart className="h-8 w-8 group-hover:text-yellow-400 transition-colors duration-200" />
-              <span className="text-yellow-400 font-bold group-hover:text-white transition-colors duration-200">0</span>
+              <ShoppingCart className="h-8 w-8 group-hover:text-yellow-400 transition-colors duration-200" />
+              <span className="text-yellow-400 font-bold group-hover:text-white transition-colors duration-200">{cartItems.length}</span>
             </Link>
-            <div >
-              
-            </div>
 
             {/* Mobile menu button */}
             <div className="lg:hidden">
@@ -94,7 +97,7 @@ const Navbar = () => {
           <div className="lg:hidden">
             <div className="px-2 pt-2 pb-3 space-y-1">
               {['Home', 'Shop by Category', 'Today\'s Deals', 'Customer Service', 'Registry', 'Gift Cards', 'Sell'].map((item) => (
-                <a key={item} href="#" className="block px-3 py-2 rounded-md text-base font-medium text-white hover:text-yellow-400 hover:bg-gray-700 transition-colors duration-200">{item}</a>
+                <Link key={item} to="#" className="block px-3 py-2 rounded-md text-base font-medium text-white hover:text-yellow-400 hover:bg-gray-700 transition-colors duration-200">{item}</Link>
               ))}
             </div>
             <div className="border-t border-gray-700 pt-4 pb-3">
@@ -103,7 +106,7 @@ const Navbar = () => {
                   <User className="h-10 w-10 rounded-full bg-gray-700 p-2" />
                 </div>
                 <div className="ml-3">
-                  <div className="text-base font-medium text-white">Sign In</div>
+                  <div className="text-base font-medium text-white">{isLoggedIn ? userProfile?.name : 'Sign In'}</div>
                   <div className="text-sm font-medium text-gray-400">Manage your account</div>
                 </div>
               </div>
@@ -111,7 +114,7 @@ const Navbar = () => {
           </div>
         )}
       </div>
-      
+
       {/* Secondary navigation */}
       <div className="bg-gray-800 py-2 px-4 hidden sm:block">
         <div className="flex items-center text-sm">
@@ -119,7 +122,7 @@ const Navbar = () => {
             <Menu className="h-5 w-5 mr-1" /> All
           </button>
           {['Today\'s Deals', 'Customer Service', 'Registry', 'Gift Cards', 'Sell'].map((item) => (
-            <a key={item} href="#" className="text-white mr-4 hover:text-yellow-400 hover:underline transition-colors duration-200">{item}</a>
+            <Link key={item} to="#" className="text-white mr-4 hover:text-yellow-400 hover:underline transition-colors duration-200">{item}</Link>
           ))}
         </div>
       </div>

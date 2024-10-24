@@ -57,14 +57,29 @@ const initialState: ProductState = {
   error: null,
 };
 
-export const fetchProducts = createAsyncThunk<Product[], void>(
+/*export const fetchProducts = createAsyncThunk<Product[], void>(
   'products/fetchProducts',
   async () => {
     const response = await getProducts();
     console.log(response.data); // Inspect the API response
     return response.data.products; // Return the products array
   }
+);*/
+
+export const fetchProducts = createAsyncThunk<Product[], void>(
+  'products/fetchProducts',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await getProducts(); // Make sure this fetches the correct data
+      console.log('API Response:', response); // Log to inspect
+      return response.products; // Return the products array from the response
+    } catch (error) {
+      console.error('Error fetching products:', error); // Log error for debugging
+      return rejectWithValue('Failed to fetch products'); // Provide a descriptive error message
+    }
+  }
 );
+
 
 // Product Slice
 const productSlice = createSlice({

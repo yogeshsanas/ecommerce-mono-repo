@@ -1,0 +1,19 @@
+{
+  "name": "payment-lib",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/payment-lib/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/vite:build",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/payment-lib",
+        "main": "libs/payment-lib/src/index.ts",
+        "tsConfig": "libs/payment-lib/tsconfig.lib.json",
+        "assets": ["libs/payment-lib/*.md"]
+      }
+    }
+  }
+}

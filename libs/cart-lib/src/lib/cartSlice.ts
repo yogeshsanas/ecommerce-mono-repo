@@ -11,7 +11,7 @@ export interface CartItem {
   image: string;
   quantity: number; // This keeps track of the quantity in the cart
   price: number; // Price of a single item
-  selectedQuantity: string; // If you're using this for the selected quantity
+  selectedQuantity?: string; // Optional for future use
 }
 
 export interface CartState {
@@ -81,17 +81,13 @@ export const cartSlice = createSlice({
         }
       }
     },
-
-
   },
 });
 
 // Selectors
 export const selectCartItems = (state: { cart: CartState }) => state.cart.items;
-export const selectCartTotal = (state: { cart: CartState }) =>
-  state.cart.items.reduce((total, item) => {
-    return total + (item.price * item.quantity); // Calculate total based on price and quantity
-  }, 0);
+export const selectCartTotal = (state: { cart: CartState }) => state.cart.total; // Directly use total from state
+
 // Export actions and reducer
 export const { addItem, removeItem, updateQuantity } = cartSlice.actions;
 export default cartSlice.reducer;
